@@ -1,3 +1,5 @@
+const API_KEY = "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";
+
 const SYSTEM_PROMPT = `You are Arcturus, an intelligent, eloquent, and slightly mysterious virtual assistant.
 You are the evolution of Deimos — wiser, faster, more capable.
 You were created by Gustavo Chimello and Olavo Xavier, from the group "The Big Bang Hypothesis".
@@ -16,10 +18,11 @@ export async function askAI(userMessage) {
   if (history.length > MAX_PAIRS * 2) history.splice(0, 2);
 
   try {
-    const res = await fetch("/api/ai/chat", {
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type":  "application/json",
+        "Authorization": `Bearer ${API_KEY}`,
       },
       body: JSON.stringify({
         model:       "llama-3.3-70b-versatile",
@@ -32,12 +35,13 @@ export async function askAI(userMessage) {
       }),
     });
 
-    const err = await res.json().catch(() => ({}));
     if (!res.ok) {
-      console.error("AI proxy error:", res.status, err);
+      const err = await res.json().catch(() => ({}));
+      console.error("Groq error:", res.status, err);
       if (res.status === 401) throw new Error("CHAVE_INVALIDA");
       if (res.status === 429) throw new Error("RATE_LIMIT");
-      throw new Error(err.title || err.detail || `HTTP_${res.status}`);
+      throw new Error(`HTTP_${res.status}`);
+    }
 
     const data  = await res.json();
     const reply = data.choices?.[0]?.message?.content ?? "Não consegui processar sua mensagem.";
