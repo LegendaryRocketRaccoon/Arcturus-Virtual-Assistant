@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Arcturus — Login</title>
+  <link rel="icon"       href="img/Arcturus.png"/>
+  <link rel="manifest"   href="./manifest.json"/>
+  <link rel="stylesheet" href="./css/login.css"/>
+</head>
+<body>
+  <div class="bg-canvas" id="bg-stars"></div>
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="logo-area">
+        <img src="img/Arcturus.png" alt="Arcturus" class="logo-img" onerror="this.style.display='none'"/>
+        <div class="logo-title">ARCTURUS</div>
+        <div class="logo-sub">Virtual Assistant · Advanced AI</div>
+      </div>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="login"    onclick="switchTab('login')">Login</button>
+        <button class="tab-btn"        data-tab="register" onclick="switchTab('register')">Register</button>
+      </div>
+      <div class="form-panel active" id="login-panel">
+        <div class="field">
+          <label for="email">E-mail</label>
+          <input type="email" id="email" placeholder="seu@email.com" autocomplete="email"/>
+        </div>
+        <div class="field">
+          <label for="password">Senha</label>
+          <input type="password" id="password" placeholder="••••••••" autocomplete="current-password"/>
+        </div>
+        <div class="forgot">
+          <button class="btn-ghost" onclick="esqueciSenha()">Forgot Password?</button>
+        </div>
+        <button class="btn-primary" onclick="login()">Login</button>
+        <div class="feedback" id="login-msg"></div>
+      </div>
+      <div class="form-panel" id="register-panel">
+        <div class="field">
+          <label for="reg-email">E-mail</label>
+          <input type="email" id="reg-email" placeholder="seu@email.com"/>
+        </div>
+        <div class="field">
+          <label for="reg-password">Password</label>
+          <input type="password" id="reg-password" placeholder="Minimum 6 characters"/>
+        </div>
+        <div class="field">
+          <label for="reg-confirm">Confirm Password</label>
+          <input type="password" id="reg-confirm" placeholder="Repeat the password"/>
+        </div>
+        <button class="btn-primary" onclick="cadastrar()">Create Account</button>
+        <div class="feedback" id="reg-msg"></div>
+      </div>
+      <div class="login-footer">
+        Developed by <span style="color:#5a9bf5">Gustavo Chimello</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const bg = document.getElementById("bg-stars");
+    for (let i = 0; i < 70; i++) {
+      const s = document.createElement("div"); s.className = "star";
+      const sz = Math.random() * 2 + 0.5;
+      s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${2+Math.random()*4}s;--dl:${Math.random()*4}s;`;
+      bg.appendChild(s);
+    }
+  </script>
+  <script type="module" src="./js/auth.js"></script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+bin/
+obj/
+SpotifyBackup/audio/
+*.user
+.vs/
+README.md/
+appsettings.json

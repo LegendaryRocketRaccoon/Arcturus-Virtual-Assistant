@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Arcturus — Virtual Assistant</title>
+  <link rel="icon"       href="img/Arcturus.png"/>
+  <link rel="manifest"   href="./manifest.json"/>
+  <link rel="stylesheet" href="./css/arcturus.css"/>
+</head>
+<body>
+<div id="app">
+  <div id="bg"></div>
+
+  <header id="header">
+    <img src="img/Arcturus.png" alt="Arcturus" class="logo-img" onerror="this.style.display='none'"/>
+    <div class="title">ARCTURUS</div>
+    <div class="user-info"><span id="user-email">—</span></div>
+    <button id="logout-btn">Sair</button>
+  </header>
+
+  <nav id="toolbar">
+    <button class="tool-btn"        id="btn-games">Jogos</button>
+    <button class="tool-btn"        id="btn-music">🎵 Músicas</button>
+    <button class="tool-btn yellow" id="btn-import">📥 Importar</button>
+    <button class="tool-btn yellow" id="btn-export">💾 Exportar</button>
+    <button class="tool-btn"        id="btn-extras">Extras</button>
+    <button class="tool-btn"        id="btn-translator">🌐 Tradutor</button>
+    <button class="tool-btn yellow" id="btn-clear">🗑 Limpar</button>
+  </nav>
+
+  <main id="chat-wrap" aria-live="polite"></main>
+
+  <div id="status-bar">
+    <div class="status-dot"></div>
+    <div id="status-text">Pronto para conversar.</div>
+    <div class="voice-indicator">🔊 Voz ativa</div>
+  </div>
+
+  <section id="input-area">
+    <input type="text" id="user-input" placeholder="Digite sua mensagem..." autocomplete="off"/>
+    <button id="voice-btn">🔊</button>
+    <button id="send-btn">Enviar ➤</button>
+  </section>
+
+  <div id="player-bar">
+    <div id="player-track-info">
+      <div id="player-track-name">—</div>
+      <div id="player-track-sub">Biblioteca Arcturus</div>
+    </div>
+    <div id="player-controls">
+      <button class="ctrl-btn"          id="prev-btn">⏮</button>
+      <button class="ctrl-btn play-btn" id="play-pause-btn">▶</button>
+      <button class="ctrl-btn"          id="next-btn">⏭</button>
+    </div>
+    <div id="player-progress-wrap">
+      <input type="range" id="player-progress" min="0" max="100" value="0"/>
+      <div id="player-time">0:00 / 0:00</div>
+    </div>
+    <input type="range" id="player-vol" min="0" max="100" value="80"/>
+    <button id="player-close">✕</button>
+  </div>
+
+  <footer id="footer">
+    Developed by <span>Gustavo Chimello</span>
+  </footer>
+</div>
+
+<div id="yt-container" style="
+  display:none; position:fixed; bottom:80px; right:16px;
+  width:320px; height:180px; border-radius:10px; overflow:hidden;
+  z-index:300; box-shadow:0 8px 32px rgba(0,0,0,0.5);
+  border:1px solid rgba(58,123,213,0.3);"></div>
+
+<script type="module" src="./js/arcturus.js"></script>
+</body>
+</html>
