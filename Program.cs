@@ -5,7 +5,8 @@ using Arcturus.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("http://localhost:5200");
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 builder.WebHost.ConfigureKestrel(o => o.Limits.MaxRequestBodySize = 524_288_000); // 500 MB
 
 builder.Services.AddControllers();
@@ -13,8 +14,12 @@ builder.Services.AddHttpClient();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var connectionString = Environment.GetEnvironmentVariable("DATABASE_URL")
+    ?? Environment.GetEnvironmentVariable("SQL_CONNECTION_STRING")
+    ?? "Server=localhost;Database=SpotifyDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
+
 builder.Services.AddDbContext<SpotifyDbContext>(o =>
-    o.UseSqlServer("Server=localhost;Database=SpotifyDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true"));
+    o.UseSqlServer(connectionString));
 
 builder.Services.AddCors(o => o.AddPolicy("AllowAll", p =>
     p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
@@ -40,7 +45,7 @@ app.MapControllers();
 
 app.MapPost("/api/ai/chat", async (HttpContext http, IHttpClientFactory clientFactory, IConfiguration config) =>
 {
-    var apiKey = config["GROQ_API_KEY"] ?? Environment.GetEnvironmentVariable("GROQ_API_KEY");
+    var apiKey = Environment.GetEnvironmentVariable("GROQ_API_KEY") ?? config["GROQ_API_KEY"];
     if (string.IsNullOrWhiteSpace(apiKey))
     {
         return Results.Problem("AI API key is not configured on the server.", statusCode: 500);
@@ -64,9 +69,9 @@ app.MapGet("/", () => Results.Redirect("/index.html"));
 Console.WriteLine("╔═══════════════════════════════════════════╗");
 Console.WriteLine("║   Arcturus — Servidor iniciado.           ║");
 Console.WriteLine("╚═══════════════════════════════════════════╝");
-Console.WriteLine("Arcturus:  http://localhost:5200");
-Console.WriteLine("Música:    http://localhost:5200/api/music");
-Console.WriteLine("Swagger:   http://localhost:5200/swagger");
+Console.WriteLine($"Arcturus:  http://0.0.0.0:{port}");
+Console.WriteLine($"Música:    http://0.0.0.0:{port}/api/music");
+Console.WriteLine($"Swagger:   http://0.0.0.0:{port}/swagger");
 Console.WriteLine("════════════════════════════════════════════");
 
 app.Run();
