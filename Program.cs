@@ -3,10 +3,11 @@ using Arcturus.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 var port = Environment.GetEnvironmentVariable("PORT") ?? "5200";
 builder.WebHost.UseUrls($"http://+:{port}");
 
-builder.WebHost.ConfigureKestrel(o => o.Limits.MaxRequestBodySize = 524_288_000); // 500 MB
+builder.WebHost.ConfigureKestrel(o => o.Limits.MaxRequestBodySize = 524_288_000);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -27,15 +28,8 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<SpotifyDbContext>();
-    try
-    {
-        db.Database.EnsureCreated();
-        Console.WriteLine("Banco de dados conectado!");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Erro no banco: {ex.Message}");
-    }
+    try   { db.Database.EnsureCreated(); Console.WriteLine("Banco conectado."); }
+    catch (Exception ex) { Console.WriteLine($"Erro no banco: {ex.Message}"); }
 }
 
 if (app.Environment.IsDevelopment()) { app.UseSwagger(); app.UseSwaggerUI(); }
@@ -50,8 +44,6 @@ app.MapGet("/", () => Results.Redirect("/index.html"));
 Console.WriteLine("╔═══════════════════════════════════════════╗");
 Console.WriteLine("║   🌌 Arcturus — Servidor iniciado.        ║");
 Console.WriteLine("╚═══════════════════════════════════════════╝");
-Console.WriteLine($"Rodando na porta: {port}");
-Console.WriteLine($"API:     /api/music");
-Console.WriteLine($"Swagger: /swagger");
+Console.WriteLine($"Porta: {port}");
 
 app.Run();
