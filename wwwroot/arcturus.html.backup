@@ -17,28 +17,22 @@
       <div class="title">ARCTURUS</div>
     </div>
 
-    <div class="header-center"></div>
-
-    <div class="user-pill">
+    <div class="user-info">
       <div id="user-avatar" class="user-avatar-circle">?</div>
-      <span id="user-email"></span>
+      <span id="user-email">—</span>
     </div>
-
-    <button id="btn-profile" class="profile-btn" title="Sobre o criador">
-      <img src="img/gustavo.jpeg" alt="Perfil" onerror="this.style.display='none';this.parentElement.textContent='GC'"/>
-    </button>
-
     <button id="logout-btn">Sair</button>
   </header>
 
   <nav id="toolbar">
-    <button class="tool-btn"        id="btn-games">Jogos</button>
-    <button class="tool-btn"        id="btn-music">Musicas</button>
-    <button class="tool-btn yellow" id="btn-import">Importar</button>
-    <button class="tool-btn yellow" id="btn-export">Exportar</button>
-    <button class="tool-btn"        id="btn-extras">Extras</button>
-    <button class="tool-btn"        id="btn-translator">Tradutor</button>
-    <button class="tool-btn yellow" id="btn-clear">Limpar</button>
+    <button class="tool-btn"        id="btn-games">🎮 Jogos</button>
+    <button class="tool-btn"        id="btn-music">🎵 Músicas</button>
+    <button class="tool-btn yellow" id="btn-import">📥 Importar</button>
+    <button class="tool-btn yellow" id="btn-export">💾 Exportar</button>
+    <button class="tool-btn"        id="btn-extras">🔧 Extras</button>
+    <button class="tool-btn"        id="btn-translator">🌐 Tradutor</button>
+    <button class="tool-btn"        id="btn-pessoas">👥 Pessoas</button>
+    <button class="tool-btn yellow" id="btn-clear">🗑 Limpar</button>
   </nav>
 
   <main id="chat-wrap" aria-live="polite"></main>
@@ -46,12 +40,13 @@
   <div id="status-bar">
     <div class="status-dot"></div>
     <div id="status-text">Pronto para conversar.</div>
+    <div class="voice-indicator">🔊 Voz ativa</div>
   </div>
 
   <section id="input-area">
     <input type="text" id="user-input" placeholder="Digite sua mensagem..." autocomplete="off"/>
     <button id="voice-btn">🔊</button>
-    <button id="send-btn">Enviar</button>
+    <button id="send-btn">Enviar ➤</button>
   </section>
 
   <div id="player-bar">
@@ -73,7 +68,7 @@
   </div>
 
   <footer id="footer">
-    Desenvolvido por <span>Gustavo Chimello</span>
+    Developed by <span>Gustavo Chimello</span>
   </footer>
 </div>
 
@@ -82,30 +77,6 @@
   width:320px; height:180px; border-radius:10px; overflow:hidden;
   z-index:300; box-shadow:0 8px 32px rgba(0,0,0,0.5);
   border:1px solid rgba(58,123,213,0.3);"></div>
-
-<div id="profile-overlay">
-  <div class="profile-card">
-    <button class="profile-close" id="profile-close" aria-label="Fechar">&times;</button>
-
-    <div class="profile-header">
-      <div class="profile-logo-ring">
-        <img src="img/Arcturus.png" alt="Arcturus" class="profile-logo-img" onerror="this.style.display='none'"/>
-      </div>
-      <div>
-        <div class="profile-title">Gustavo Chimello</div>
-        <div class="profile-sub">Criador de &amp; Arcturus</div>
-      </div>
-    </div>
-
-    <div class="profile-tabs">
-      <button class="profile-tab active" data-tab="me"     onclick="switchProfileTab('me')">Sobre mim</button>
-      <button class="profile-tab"        data-tab="people" onclick="switchProfileTab('people')">Pessoas</button>
-    </div>
-
-    <div class="profile-panel active" id="panel-me"></div>
-    <div class="profile-panel"        id="panel-people"></div>
-  </div>
-</div>
 
 <script type="module" src="js/arcturus.js"></script>
 </body>

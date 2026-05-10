@@ -5,11 +5,10 @@
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
-      "launchUrl": "http://localhost:5200",
-      "applicationUrl": "http://localhost:5200",
+      "launchUrl": "https://localhost:8081",
+      "applicationUrl": "https://localhost:8081;http://localhost:8080",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "GROQ_API_KEY": "YOUR_GROQ_API_KEY_HERE"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

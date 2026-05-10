@@ -7,6 +7,7 @@ SpotifyBackup/audio/
 
 .env
 *.env
+appsettings.json
 appsettings.Development.json
 
 *.log

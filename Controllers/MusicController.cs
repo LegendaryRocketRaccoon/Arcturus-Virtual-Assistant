@@ -108,6 +108,23 @@ public class MusicController : ControllerBase
         return Ok(new { success = true });
     }
 
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] MusicUpdateRequest req)
+    {
+        var m = await _db.Music.FindAsync(id);
+        if (m == null) return NotFound(new { error = "Não encontrada" });
+        if (!string.IsNullOrWhiteSpace(req.Title)) m.Title = req.Title.Trim();
+        if (!string.IsNullOrWhiteSpace(req.Artist)) m.Artist = req.Artist.Trim();
+        m.Album = req.Album;
+        m.Genre = req.Genre;
+        m.Year = req.Year;
+        await _db.SaveChangesAsync();
+        return Ok(new { success = true, music = new {
+            id = m.Id, title = m.Title, artist = m.Artist,
+            album = m.Album, genre = m.Genre, year = m.Year
+        }});
+    }
+
     [HttpGet("stats")]
     public async Task<IActionResult> Stats()
     {
@@ -121,6 +138,15 @@ public class MusicController : ControllerBase
             totalDurationSeconds  = duration,
         });
     }
+}
+
+public class MusicUpdateRequest
+{
+    public string? Title   { get; set; }
+    public string? Artist  { get; set; }
+    public string? Album   { get; set; }
+    public string? Genre   { get; set; }
+    public int?   Year     { get; set; }
 }
 
 public class MusicUploadRequest
