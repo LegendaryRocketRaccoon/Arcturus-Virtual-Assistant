@@ -12,7 +12,6 @@ builder.WebHost.UseUrls($"http://*:{portNum}");
 builder.WebHost.ConfigureKestrel(o =>
 {
     o.Limits.MaxRequestBodySize = 524_288_000;
-    o.ConfigureHttpsDefaults(_ => { });
 });
 
 builder.Services.AddControllers();
@@ -20,13 +19,25 @@ builder.Services.AddHttpClient();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-var connectionString =
-    Environment.GetEnvironmentVariable("DATABASE_URL")
-    ?? Environment.GetEnvironmentVariable("SQL_CONNECTION_STRING")
-    ?? builder.Configuration.GetConnectionString("Default")
-    ?? "Server=localhost;Database=SpotifyDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
 
-builder.Services.AddDbContext<SpotifyDbContext>(o => o.UseSqlServer(connectionString));
+var rawConnectionString =
+    Environment.GetEnvironmentVariable("DATABASE_URL")
+    ?? builder.Configuration.GetConnectionString("Default")
+    ?? "Host=localhost;Database=arcturus;Username=postgres;Password=postgres";
+
+string connectionString = rawConnectionString;
+if (rawConnectionString.StartsWith("postgresql://") || rawConnectionString.StartsWith("postgres://"))
+{
+    var uri    = new Uri(rawConnectionString);
+    var user   = uri.UserInfo.Split(':')[0];
+    var pass   = uri.UserInfo.Split(':').Length > 1 ? uri.UserInfo.Split(':')[1] : "";
+    var host   = uri.Host;
+    var dbPort = uri.Port > 0 ? uri.Port : 5432;
+    var db     = uri.AbsolutePath.TrimStart('/');
+    connectionString = $"Host={host};Port={dbPort};Database={db};Username={user};Password={pass};SSL Mode=Require;Trust Server Certificate=true";
+}
+
+builder.Services.AddDbContext<SpotifyDbContext>(o => o.UseNpgsql(connectionString));
 
 builder.Services.AddCors(o => o.AddPolicy("AllowAll", p =>
     p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
@@ -36,8 +47,15 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<SpotifyDbContext>();
-    try   { db.Database.EnsureCreated(); Console.WriteLine("Banco conectado."); }
-    catch (Exception ex) { Console.WriteLine($"Erro no banco: {ex.Message}"); }
+    try
+    {
+        db.Database.EnsureCreated();
+        Console.WriteLine("Banco PostgreSQL conectado.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Erro no banco: {ex.Message}");
+    }
 }
 
 if (app.Environment.IsDevelopment()) { app.UseSwagger(); app.UseSwaggerUI(); }
