@@ -4,6 +4,16 @@ import { askAI, clearHistory } from "./ai.js";
 import { initializeApp }                        from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+const ADMIN_EMAIL = "chimellogustavocamara@gmail.com";
+let isAdmin = false;
+
+function applyPermissions() {
+    const restricted = document.querySelectorAll(".admin-only");
+    restricted.forEach(el => {
+        el.style.display = isAdmin ? "" : "none";
+    });
+}
+
 const PEOPLE = [
     {
         name:      "Gustavo Chimello",
@@ -39,12 +49,13 @@ const auth = getAuth(initializeApp(FB));
 
 onAuthStateChanged(auth, user => {
     if (!user) { window.location.href = "index.html"; return; }
-    const email    = user.email || "";
-    const initials = email.substring(0, 2).toUpperCase();
-    const emailEl  = document.getElementById("user-email");
-    const av       = document.getElementById("user-avatar");
+    const email   = user.email || "";
+    isAdmin       = email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+    const emailEl = document.getElementById("user-email");
+    const av      = document.getElementById("user-avatar");
     if (emailEl) emailEl.textContent = email;
-    if (av)      av.textContent      = initials;
+    if (av)      av.textContent      = email.substring(0, 2).toUpperCase();
+    applyPermissions();
 });
 
 document.getElementById("logout-btn").addEventListener("click", () =>
@@ -63,9 +74,9 @@ const synth = window.speechSynthesis;
 function speak(text) {
     if (!voiceOn || !synth) return;
     synth.cancel();
-    const u   = new SpeechSynthesisUtterance(text.substring(0, 300));
-    u.lang    = "pt-BR"; u.pitch = 1; u.rate = 1; u.volume = 1;
-    u.voice   = synth.getVoices().find(v => v.lang.startsWith("pt")) || null;
+    const u = new SpeechSynthesisUtterance(text.substring(0, 300));
+    u.lang  = "pt-BR"; u.pitch = 1; u.rate = 1; u.volume = 1;
+    u.voice = synth.getVoices().find(v => v.lang.startsWith("pt")) || null;
     synth.speak(u);
 }
 
@@ -79,8 +90,8 @@ voiceBtn.addEventListener("click", () => {
 function setStatus(msg) { if (statusText) statusText.textContent = msg; }
 
 function addMsg(html, role) {
-    const wrap       = document.createElement("div");
-    wrap.className   = `msg ${role}`;
+    const wrap     = document.createElement("div");
+    wrap.className = `msg ${role}`;
 
     if (role === "bot") {
         const av     = document.createElement("img");
@@ -92,8 +103,7 @@ function addMsg(html, role) {
     } else {
         const av       = document.createElement("div");
         av.className   = "msg-avatar user-av";
-        const emailEl  = document.getElementById("user-email");
-        const email    = emailEl?.textContent || "U";
+        const email    = document.getElementById("user-email")?.textContent || "U";
         av.textContent = email.substring(0, 2).toUpperCase();
         wrap.appendChild(av);
     }
@@ -108,8 +118,8 @@ function addMsg(html, role) {
         bubble.appendChild(nm);
     }
 
-    const body       = document.createElement("div");
-    body.innerHTML   = html;
+    const body     = document.createElement("div");
+    body.innerHTML = html;
     bubble.appendChild(body);
     wrap.appendChild(bubble);
     chatWrap.appendChild(wrap);
@@ -118,15 +128,15 @@ function addMsg(html, role) {
 }
 
 function showTyping() {
-    const wrap     = document.createElement("div");
-    wrap.className = "msg bot";
-    wrap.id        = "typing-indicator";
-    const av       = document.createElement("img");
-    av.className   = "msg-avatar bot-av";
-    av.src         = "img/Arcturus.png";
-    av.alt         = "Arcturus";
-    av.onerror     = () => { av.style.display = "none"; };
-    const bubble   = document.createElement("div");
+    const wrap       = document.createElement("div");
+    wrap.className   = "msg bot";
+    wrap.id          = "typing-indicator";
+    const av         = document.createElement("img");
+    av.className     = "msg-avatar bot-av";
+    av.src           = "img/Arcturus.png";
+    av.alt           = "Arcturus";
+    av.onerror       = () => { av.style.display = "none"; };
+    const bubble     = document.createElement("div");
     bubble.className = "msg-bubble";
     bubble.innerHTML = `<div class="msg-name">Arcturus</div>
         <div class="typing-dots"><span></span><span></span><span></span></div>`;
@@ -207,7 +217,7 @@ document.getElementById("btn-music").addEventListener("click", async () => {
 
         if (!tracks.length) {
             bubble.querySelector("div").innerHTML =
-                `<p>Biblioteca vazia. Use <strong>Importar</strong> para adicionar faixas.</p>`;
+                `<p>Biblioteca vazia${isAdmin ? ". Use <strong>Importar</strong> para adicionar faixas." : "."}</p>`;
             return;
         }
 
@@ -221,8 +231,10 @@ document.getElementById("btn-music").addEventListener("click", async () => {
                 <span class="track-artist">${esc(t.artist)}</span>
               </span>
             </button>
+            ${isAdmin ? `
             <button class="edit-btn" data-id="${t.id}" data-title="${ea(t.title)}" data-artist="${ea(t.artist)}" title="Editar">&#9998;</button>
             <button class="del-btn"  data-id="${t.id}" data-title="${ea(t.title)}" title="Deletar">&#128465;</button>
+            ` : ""}
           </div>`).join("");
 
         bubble.innerHTML = `
@@ -230,7 +242,7 @@ document.getElementById("btn-music").addEventListener("click", async () => {
           <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:0.6rem;">
             ${stats.totalMusic} faixas &middot; ${stats.totalSizeMB} MB no banco
           </div>
-          <p style="margin-bottom:0.5rem;">Clique em uma faixa para reproduzir. Qualquer upload fica disponivel para todos os usuarios.</p>
+          <p style="margin-bottom:0.5rem;">Clique em uma faixa para reproduzir.</p>
           ${list}
           <div style="margin-top:0.9rem;padding-top:0.7rem;border-top:1px solid var(--glass-border);">
             <p style="font-size:0.78rem;color:var(--blue-light);margin-bottom:0.35rem;">Reproduzir video do YouTube:</p>
@@ -253,38 +265,40 @@ document.getElementById("btn-music").addEventListener("click", async () => {
             });
         });
 
-        bubble.querySelectorAll(".edit-btn").forEach(btn => {
-            btn.addEventListener("click", async () => {
-                const newTitle  = prompt("Titulo da faixa:", btn.dataset.title);
-                if (newTitle === null) return;
-                const newArtist = prompt("Artista:", btn.dataset.artist);
-                if (newArtist === null) return;
-                try {
-                    await apiUpdateMusic(+btn.dataset.id, {
-                        title:  newTitle.trim()  || btn.dataset.title,
-                        artist: newArtist.trim() || btn.dataset.artist,
-                    });
-                    const row = btn.closest("div");
-                    row.querySelector(".track-title").textContent  = newTitle;
-                    row.querySelector(".track-artist").textContent = newArtist;
-                    btn.dataset.title  = newTitle;
-                    btn.dataset.artist = newArtist;
-                    setStatus("Metadados atualizados.");
-                } catch (e) { alert("Erro: " + e.message); }
+        if (isAdmin) {
+            bubble.querySelectorAll(".edit-btn").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    const newTitle  = prompt("Titulo da faixa:", btn.dataset.title);
+                    if (newTitle === null) return;
+                    const newArtist = prompt("Artista:", btn.dataset.artist);
+                    if (newArtist === null) return;
+                    try {
+                        await apiUpdateMusic(+btn.dataset.id, {
+                            title:  newTitle.trim()  || btn.dataset.title,
+                            artist: newArtist.trim() || btn.dataset.artist,
+                        });
+                        const row = btn.closest("div");
+                        row.querySelector(".track-title").textContent  = newTitle;
+                        row.querySelector(".track-artist").textContent = newArtist;
+                        btn.dataset.title  = newTitle;
+                        btn.dataset.artist = newArtist;
+                        setStatus("Metadados atualizados.");
+                    } catch (e) { alert("Erro: " + e.message); }
+                });
             });
-        });
 
-        bubble.querySelectorAll(".del-btn").forEach(btn => {
-            btn.addEventListener("click", async () => {
-                if (!confirm(`Deletar "${btn.dataset.title}" do banco?`)) return;
-                try {
-                    await apiDelete(+btn.dataset.id);
-                    btn.closest("div").remove();
-                    window._arcTracks = (window._arcTracks || []).filter(t => t.id !== +btn.dataset.id);
-                    setStatus("Faixa deletada.");
-                } catch (e) { alert("Erro: " + e.message); }
+            bubble.querySelectorAll(".del-btn").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    if (!confirm(`Deletar "${btn.dataset.title}" do banco?`)) return;
+                    try {
+                        await apiDelete(+btn.dataset.id);
+                        btn.closest("div").remove();
+                        window._arcTracks = (window._arcTracks || []).filter(t => t.id !== +btn.dataset.id);
+                        setStatus("Faixa deletada.");
+                    } catch (e) { alert("Erro: " + e.message); }
+                });
             });
-        });
+        }
 
         setTimeout(() => {
             const ytInput = document.getElementById("yt-url-input");
@@ -309,6 +323,11 @@ document.getElementById("btn-music").addEventListener("click", async () => {
 });
 
 document.getElementById("btn-import").addEventListener("click", () => {
+    if (!isAdmin) {
+        addMsg(`<p>Apenas o administrador pode importar faixas.</p>`, "bot");
+        return;
+    }
+
     addMsg(`
         <div>
           <p style="margin-bottom:0.45rem;"><strong>Importar faixas para o banco</strong></p>
@@ -322,10 +341,6 @@ document.getElementById("btn-import").addEventListener("click", () => {
             Selecionar arquivos de audio
             <input type="file" id="import-files" accept=".mp3,.mp4,.m4a,.wav,.ogg,.webm" multiple style="display:none"/>
           </label>
-          <div id="imp-prog" style="display:none;margin-top:0.85rem;">
-            <div class="imp-bar-wrap"><div class="imp-bar" id="imp-bar"></div></div>
-            <p id="imp-txt" style="font-size:0.76rem;color:var(--blue-light);">Aguardando...</p>
-          </div>
         </div>`, "bot");
 
     setTimeout(() => {
@@ -403,6 +418,11 @@ document.getElementById("btn-import").addEventListener("click", () => {
 });
 
 document.getElementById("btn-export").addEventListener("click", async () => {
+    if (!isAdmin) {
+        addMsg(`<p>Apenas o administrador pode exportar faixas.</p>`, "bot");
+        return;
+    }
+
     const bubble = addMsg(`<p>Verificando banco...</p>`, "bot");
     try {
         const data   = await apiListMusic(1, 9999);
@@ -488,20 +508,20 @@ function buildProfileOverlay() {
     const overlay = document.getElementById("profile-overlay");
     if (!overlay) return;
 
-    const me       = PEOPLE.find(p => p.creator);
-    const mePanel  = document.getElementById("panel-me");
-    if (me && mePanel) mePanel.innerHTML = buildPersonCard(me, true);
+    const me      = PEOPLE.find(p => p.creator);
+    const mePanel = document.getElementById("panel-me");
+    if (me && mePanel) mePanel.innerHTML = buildPersonCard(me);
 
-    const others      = PEOPLE.filter(p => !p.creator);
     const othersPanel = document.getElementById("panel-people");
+    const others      = PEOPLE.filter(p => !p.creator);
     if (othersPanel) {
         othersPanel.innerHTML = others.length
-            ? others.map(p => buildPersonCard(p, false)).join("")
+            ? others.map(buildPersonCard).join("")
             : `<p style="color:var(--text-muted);font-size:0.84rem;">Nenhuma pessoa listada ainda.</p>`;
     }
 }
 
-function buildPersonCard(p, isMe) {
+function buildPersonCard(p) {
     const avatarHtml = `
         <img class="person-avatar${p.creator ? " creator-av" : ""}"
           src="${p.avatar}" alt="${esc(p.name)}"
@@ -546,17 +566,13 @@ if (btnProfile) {
 const profileClose = document.getElementById("profile-close");
 if (profileClose) {
     profileClose.addEventListener("click", () => {
-        const overlay = document.getElementById("profile-overlay");
-        if (overlay) overlay.classList.remove("open");
+        document.getElementById("profile-overlay")?.classList.remove("open");
     });
 }
 
-const profileOverlay = document.getElementById("profile-overlay");
-if (profileOverlay) {
-    profileOverlay.addEventListener("click", e => {
-        if (e.target === e.currentTarget) e.currentTarget.classList.remove("open");
-    });
-}
+document.getElementById("profile-overlay")?.addEventListener("click", e => {
+    if (e.target === e.currentTarget) e.currentTarget.classList.remove("open");
+});
 
 function greet() {
     const h   = new Date().getHours();
@@ -575,9 +591,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const bg = document.getElementById("bg");
     if (bg) {
         for (let i = 0; i < 65; i++) {
-            const s  = document.createElement("div");
+            const s     = document.createElement("div");
             s.className = "star";
-            const sz = Math.random() * 2 + 0.5;
+            const sz    = Math.random() * 2 + 0.5;
             s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${2+Math.random()*4}s;--dl:${Math.random()*4}s;opacity:${Math.random()*0.4+0.1};`;
             bg.appendChild(s);
         }
