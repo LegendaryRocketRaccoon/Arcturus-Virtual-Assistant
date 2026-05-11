@@ -5,10 +5,15 @@ using Arcturus.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+var port    = Environment.GetEnvironmentVariable("PORT") ?? "8080";
 var portNum = int.Parse(port);
-builder.WebHost.UseUrls($"http://*:{portNum}", $"https://*:{portNum + 1}");
-builder.WebHost.ConfigureKestrel(o => o.Limits.MaxRequestBodySize = 524_288_000);
+
+builder.WebHost.UseUrls($"http://*:{portNum}");
+builder.WebHost.ConfigureKestrel(o =>
+{
+    o.Limits.MaxRequestBodySize = 524_288_000;
+    o.ConfigureHttpsDefaults(_ => { });
+});
 
 builder.Services.AddControllers();
 builder.Services.AddHttpClient();
@@ -18,6 +23,7 @@ builder.Services.AddSwaggerGen();
 var connectionString =
     Environment.GetEnvironmentVariable("DATABASE_URL")
     ?? Environment.GetEnvironmentVariable("SQL_CONNECTION_STRING")
+    ?? builder.Configuration.GetConnectionString("Default")
     ?? "Server=localhost;Database=SpotifyDB;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true";
 
 builder.Services.AddDbContext<SpotifyDbContext>(o => o.UseSqlServer(connectionString));
@@ -63,10 +69,10 @@ app.MapGet("/api/debug/groq", (IConfiguration config) =>
     var key          = fromEnv ?? fromSettings;
     return Results.Ok(new
     {
-        fonte     = fromEnv != null ? "variavel de ambiente" : fromSettings != null ? "appsettings.json" : "NENHUMA",
-        prefixo   = key != null ? key[..Math.Min(12, key.Length)] + "..." : "null",
-        tamanho   = key?.Length ?? 0,
-        status    = key != null ? "chave encontrada" : "CHAVE NAO ENCONTRADA"
+        fonte   = fromEnv != null ? "variavel de ambiente" : fromSettings != null ? "appsettings.json" : "NENHUMA",
+        prefixo = key != null ? key[..Math.Min(12, key.Length)] + "..." : "null",
+        tamanho = key?.Length ?? 0,
+        status  = key != null ? "chave encontrada" : "CHAVE NAO ENCONTRADA"
     });
 });
 
@@ -76,7 +82,7 @@ app.MapPost("/api/ai/chat", async (HttpContext http, IHttpClientFactory cf, ICon
               ?? config["GroqApiKey"];
 
     if (string.IsNullOrWhiteSpace(apiKey))
-        return Results.Problem("GROQ_API_KEY nao configurada. Adicione ao appsettings.json ou como variavel de ambiente.", statusCode: 500);
+        return Results.Problem("GROQ_API_KEY nao configurada.", statusCode: 500);
 
     var body = await new StreamReader(http.Request.Body).ReadToEndAsync();
     var req  = new HttpRequestMessage(HttpMethod.Post, "https://api.groq.com/openai/v1/chat/completions")
@@ -90,20 +96,12 @@ app.MapPost("/api/ai/chat", async (HttpContext http, IHttpClientFactory cf, ICon
     var res     = await client.SendAsync(req);
     var content = await res.Content.ReadAsStringAsync();
 
-    Console.WriteLine($"[Groq] Status: {(int)res.StatusCode} | Prefixo da chave: {apiKey[..Math.Min(12, apiKey.Length)]}...");
+    Console.WriteLine($"[Groq] Status: {(int)res.StatusCode}");
 
     return Results.Text(content, "application/json", Encoding.UTF8, (int)res.StatusCode);
 });
 
 app.MapGet("/", () => Results.Redirect("/index.html"));
 
-Console.WriteLine($"Arcturus rodando em http://localhost:{port} e https://localhost:{portNum + 1}");
-try
-{
-    app.Run();
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"Erro ao iniciar: {ex.Message}");
-    Console.WriteLine(ex.StackTrace);
-}
+Console.WriteLine($"Arcturus rodando em http://0.0.0.0:{portNum}");
+app.Run();
