@@ -32,7 +32,7 @@ const PEOPLE = [
         creator:   false,
         linkedin:  "https://www.linkedin.com/in/olavo-xavier-1746673b5/",
         github:    "https://github.com/TheAppleJuicer",
-        portfolio: "https://portfolio-olavo.netlify.app/",
+        portfolio: "https://olavoportfolio.netlify.app/",
     },
 ];
 
